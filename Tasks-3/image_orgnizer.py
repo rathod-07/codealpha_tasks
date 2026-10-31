@@ -1,42 +1,59 @@
-# 📁 Image File Organizer (Python) — CodeAlpha Task 3
+import os
+import shutil
 
-[![Python Version](https://img.shields.io/badge/Python-3.x-blue.svg)](https://www.python.org/)
-[![Internship](https://img.shields.io/badge/CodeAlpha-October%20Batch-orange.svg)](https://www.codealpha.tech/)
 
-An automated Python script designed to clean up cluttered directories by organizing image files (.jpg, .jpeg) into a dedicated *Images* directory automatically. Developed as part of the *CodeAlpha Python Programming Internship*.
+def organize_jpg_files(folder_path):
+	"""Move .jpg and .jpeg files from folder_path into its Images folder."""
+	print("=" * 52)
+	print(" IMAGE FILE ORGANIZER")
+	print("Target folder: " + folder_path)
+	print("=" * 52)
 
----
+	if not os.path.isdir(folder_path):
+		print(" Error: The folder does not exist.")
+		return
 
-## 📌 Overview
+	images_folder = os.path.join(folder_path, "Images")
+	os.makedirs(images_folder, exist_ok=True)
 
-Managing scattered files manually can be tedious. This automation utility scans a target directory, identifies image files, safely moves them into a structured folder, and handles duplicate filename conflicts without overwriting existing data.
+	moved_count = 0
+	skipped_count = 0
+	matched_count = 0
 
----
+	# Only inspect files directly inside the selected folder.
+	for filename in os.listdir(folder_path):
+		source_path = os.path.join(folder_path, filename)
 
-## ✨ Key Features
+		# Ignore folders and match extensions without regard to letter case.
+		if os.path.isfile(source_path) and filename.lower().endswith((".jpg", ".jpeg")):
+			matched_count += 1
+			destination_path = os.path.join(images_folder, filename)
 
-- *🔍 Automatic File Detection:* Identifies .jpg and .jpeg extensions seamlessly (case-insensitive).
-- *📁 Directory Management:* Automatically creates an Images subfolder if it does not already exist.
-- *🛡️ Collision Prevention:* Prevents accidental overwriting by appending a unique counter to existing file names.
-- *📊 Execution Statistics:* Displays real-time terminal feedback along with a summary of moved, skipped, and total processed files.
-- *🔒 Robust Error Handling:* Gracefully handles invalid directory paths and permission issues.
+			# Avoid overwriting an image already in the destination folder.
+			if os.path.exists(destination_path):
+				print(" Skipped (already exists): " + filename)
+				skipped_count += 1
+				continue
 
----
+			shutil.move(source_path, destination_path)
+			print(" Moved: " + filename + " → Images")
+			moved_count += 1
 
-## 🛠️ Tech Stack & Modules
+	if matched_count == 0:
+		print(" No .jpg or .jpeg files found in this folder.")
 
-- *Language:* Python 3.x
-- *Standard Library Modules:*
-  - os — Directory traversal and path manipulations.
-  - shutil — High-level file operations and moving files.
+	print("-" * 52)
+	print(" Organization complete")
+	print("Moved: " + str(moved_count) + " | Skipped: " + str(skipped_count))
+	print("=" * 52)
 
----
 
-## 📂 Project Architecture
+if __name__ == "__main__":
+	# Set this to the folder you want to organize, or enter its path when asked.
+	target_folder = input(
+		"Folder to organize (press Enter for this script's folder): "
+	).strip()
+	if not target_folder:
+		target_folder = os.path.dirname(os.path.abspath(__file__))
 
-```text
-codealpha_tasks/
-│
-├── Task-3-Image-Organizer/
-│   ├── image_organizer.py   # Main Python automation script
-│   └── README.md            # Task documentation
+	organize_jpg_files(target_folder)
